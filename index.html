@@ -331,7 +331,7 @@ var FIELDS=[
 ];
 var SETTINGS=[
   {k:'sound',label:'Bips sonores',hint:'Un signal à chaque départ, trois bips avant chaque changement.'},
-  {k:'silent',label:'Son en mode silencieux',hint:'Les bips et la voix sonnent même si le téléphone est en silencieux. Peut mettre en pause la musique d\u2019une autre appli pendant la séance.'},
+  {k:'mix',label:'Garder ma musique',hint:'Les bips et la voix se mélangent à Spotify ou Apple Music. Le mode silencieux de l\u2019iPhone les coupe : désactive-le pendant la séance. Éteins cette option pour que le minuteur sonne même en silencieux, en mettant la musique en pause.'},
   {k:'voice',label:'Guide vocal',hint:'Annonce l’effort, le repos et le numéro du round.'},
   {k:'flash',label:'Flash à l’écran',hint:'L’écran clignote deux fois à chaque changement.'},
   {k:'vibrate',label:'Vibrations',hint:'Sur les téléphones qui le permettent.',ok:function(){return 'vibrate' in navigator;}},
@@ -401,7 +401,7 @@ function defaults(){
       {id:'m-circuit',name:'Circuit 3 tours',prep:15,work:40,rest:20,rounds:6,cycles:3,cycleRest:90,cooldown:0,model:true}
     ],
     history:[],
-    settings:{sound:true,silent:true,voice:true,flash:!reduceMotion,vibrate:true,wake:true}
+    settings:{sound:true,mix:true,silent:true,voice:true,flash:!reduceMotion,vibrate:true,wake:true}
   };
 }
 function num(v,min,max,def){v=Math.round(Number(v));return isFinite(v)?clamp(v,min,max):def;}
@@ -760,7 +760,13 @@ function silentWav(){
   return URL.createObjectURL(new Blob([b],{type:'audio/wav'}));
 }
 function forceSound(){
-  if(!state.settings.silent||!(state.settings.sound||state.settings.voice))return;
+  if(!(state.settings.sound||state.settings.voice))return;
+  if(state.settings.mix){
+    /* Mix with music apps: an ambient session plays over Spotify or Apple Music, but the silent switch mutes it. */
+    try{if(navigator.audioSession)navigator.audioSession.type='ambient';}catch(e){}
+    try{if(silentEl)silentEl.pause();}catch(e){}
+    return;
+  }
   try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch(e){}
   try{
     if(!silentEl){silentEl=new Audio(silentWav());silentEl.loop=true;silentEl.setAttribute('playsinline','');}
