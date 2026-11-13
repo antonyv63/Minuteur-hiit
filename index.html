@@ -829,8 +829,18 @@ function clipFor(seg){
     default:return 'cool';
   }
 }
+/* iOS home-screen apps can lose Web Audio after being sent to the background (WebKit bug 291892).
+   A context that lived through a trip to the background is replaced at the next tap. */
+var actxStale=false;
+document.addEventListener('visibilitychange',function(){if(document.hidden&&actx&&!(run&&run.running))actxStale=true;});
 function ensureAudio(){
   forceSound();
+  if(actx&&actxStale&&!(run&&run.running&&!run.track)){
+    cancelAudio();
+    try{actx.close();}catch(e){}
+    actx=null;
+  }
+  actxStale=false;
   try{
     if(!actx){
       var C=window.AudioContext||window.webkitAudioContext;

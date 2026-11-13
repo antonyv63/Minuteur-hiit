@@ -1,5 +1,5 @@
 // Keeps the timer usable offline: serve from the cache, refresh it in the background.
-const CACHE = 'minuteur-hiit-v4';
+const CACHE = 'minuteur-hiit-v5';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
